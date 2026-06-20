@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Cyber Toolkit</title>
+
+<style>
+body{
+    background:#030712;
+    color:white;
+    font-family:Arial,sans-serif;
+    padding:20px;
+}
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+.card{
+    background:#111827;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:18px;
+    box-shadow:0 0 15px rgba(0,0,0,0.4);
+}
+h1,h2{
+    text-align:center;
+}
+input,textarea,button,select{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+}
+button{
+    background:#38bdf8;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover{
+    opacity:0.9;
+}
+.result{
+    background:#0f172a;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+    word-wrap:break-word;
+}
+small{
+    color:#94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚡ Ultimate Cyber Toolkit ⚡</h1>
+
+<div class="card">
+<h2>Password Generator</h2>
+
+<label>Password Length</label>
+<input type="number" id="passLength" value="16">
+
+<button onclick="generatePassword()">Generate Strong Password</button>
+
+<div class="result" id="passwordResult"></div>
+</div>
+
+<div class="card">
+<h2>Morse Code Converter</h2>
+
+<textarea id="morseInput" rows="4" placeholder="Enter text or morse code"></textarea>
+
+<button onclick="textToMorse()">Text → Morse</button>
+<button onclick="morseToText()">Morse → Text</button>
+
+<div class="result" id="morseResult"></div>
+</div>
+
+<div class="card">
+<h2>Encryption / Decryption Tool</h2>
+
+<textarea id="cryptoInput" rows="4" placeholder="Enter text"></textarea>
+
+<label>Secret Key</label>
+<input type="text" id="secretKey" placeholder="Enter secret key">
+
+<select id="algo">
+<option value="caesar">Caesar Cipher</option>
+<option value="xor">XOR Cipher</option>
+<option value="base64">Base64 Encode</option>
+</select>
+
+<button onclick="encryptText()">Encrypt</button>
+<button onclick="decryptText()">Decrypt</button>
+
+<div class="result" id="cryptoResult"></div>
+
+<small>
+Caesar uses numeric key. XOR uses text key. Base64 needs no key.
+</small>
+
+</div>
+
+</div>
+
+<script>
+
+function generatePassword(){
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+    let length = document.getElementById("passLength").value;
+    let password = "";
+
+    for(let i=0;i<length;i++){
+        password += chars.charAt(Math.floor(Math.random()*chars.length));
+    }
+
+    document.getElementById("passwordResult").innerText = password;
+}
+
+const morseMap = {
+"A":".-","B":"-...","C":"-.-.","D":"-..","E":".",
+"F":"..-.","G":"--.","H":"....","I":"..","J":".---",
+"K":"-.-","L":".-..","M":"--","N":"-.","O":"---",
+"P":".--.","Q":"--.-","R":".-.","S":"...","T":"-",
+"U":"..-","V":"...-","W":".--","X":"-..-","Y":"-.--",
+"Z":"--..","1":".----","2":"..---","3":"...--",
+"4":"....-","5":".....","6":"-....","7":"--...",
+"8":"---..","9":"----.","0":"-----"," ":"/"
+};
+
+const reverseMorseMap = {};
+
+for(let key in morseMap){
+    reverseMorseMap[morseMap[key]] = key;
+}
+
+function textToMorse(){
+    let text = document.getElementById("morseInput").value.toUpperCase();
+
+    let result = text.split("").map(char => morseMap[char] || "").join(" ");
+
+    document.getElementById("morseResult").innerText = result;
+}
+
+function morseToText(){
+    let morse = document.getElementById("morseInput").value.trim();
+
+    let result = morse.split(" ").map(code => reverseMorseMap[code] || "").join("");
+
+    document.getElementById("morseResult").innerText = result;
+}
+
+function caesarEncrypt(text, shift){
+    return text.split('').map(char => {
+        let code = char.charCodeAt(0);
+
+        if(code >= 65 && code <= 90){
+            return String.fromCharCode(((code - 65 + shift) % 26) + 65);
+        }
+
+        if(code >= 97 && code <= 122){
+            return String.fromCharCode(((code - 97 + shift) % 26) + 97);
+        }
+
+        return char;
+
+    }).join('');
+}
+
+function caesarDecrypt(text, shift){
+    return caesarEncrypt(text, 26 - shift);
+}
+
+function xorCipher(text, key){
+    let output = "";
+
+    for(let i=0;i<text.length;i++){
+        output += String.fromCharCode(
+            text.charCodeAt(i) ^ key.charCodeAt(i % key.length)
+        );
+    }
+
+    return output;
+}
+
+function encryptText(){
+
+    let text = document.getElementById("cryptoInput").value;
+    let key = document.getElementById("secretKey").value;
+    let algo = document.getElementById("algo").value;
+    let result = "";
+
+    if(algo === "caesar"){
+        let shift = parseInt(key) || 3;
+        result = caesarEncrypt(text, shift);
+    }
+
+    else if(algo === "xor"){
+
+        if(!key){
+            alert("Enter key for XOR");
+            return;
+        }
+
+        result = btoa(xorCipher(text, key));
+    }
+
+    else if(algo === "base64"){
+        result = btoa(text);
+    }
+
+    document.getElementById("cryptoResult").innerText = result;
+}
+
+function decryptText(){
+
+    let text = document.getElementById("cryptoInput").value;
+    let key = document.getElementById("secretKey").value;
+    let algo = document.getElementById("algo").value;
+    let result = "";
+
+    try{
+
+        if(algo === "caesar"){
+            let shift = parseInt(key) || 3;
+            result = caesarDecrypt(text, shift);
+        }
+
+        else if(algo === "xor"){
+
+            if(!key){
+                alert("Enter key for XOR");
+                return;
+            }
+
+            result = xorCipher(atob(text), key);
+        }
+
+        else if(algo === "base64"){
+            result = atob(text);
+        }
+
+        document.getElementById("cryptoResult").innerText = result;
+
+    }
+
+    catch(e){
+        document.getElementById("cryptoResult").innerText = "Invalid encrypted text!";
+    }
+}
+
+</script>
+
+</body>
+</html>
